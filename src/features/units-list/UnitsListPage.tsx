@@ -1,21 +1,14 @@
 import { Link } from 'react-router-dom'
 import { Button, Group, Loader, Text, Title } from '@mantine/core'
 
-import type { UnitsQuery } from '../../types/unit'
 import { useUnits } from '../../hooks/useUnits'
+import { useUnitsSearchParams } from '../../hooks/useUnitsSearchParams'
+import { UnitsFilters } from './UnitsFilters'
 import { UnitsTable } from './UnitsTable'
 
-const TEMPORARY_QUERY: UnitsQuery = {
-  search: '',
-  type: null,
-  status: null,
-  sort: 'mileage',
-  order: 'asc',
-  page: 1,
-}
-
 export function UnitsListPage() {
-  const { data, isPending, isError, error } = useUnits(TEMPORARY_QUERY)
+  const { query, hasActiveFilters, setSearch, setType, setStatus, reset } = useUnitsSearchParams()
+  const { data, isPending, isError, error } = useUnits(query)
 
   return (
     <>
@@ -25,6 +18,17 @@ export function UnitsListPage() {
           Добавить технику
         </Button>
       </Group>
+
+      <UnitsFilters
+        search={query.search}
+        type={query.type}
+        status={query.status}
+        hasActiveFilters={hasActiveFilters}
+        onSearchChange={setSearch}
+        onTypeChange={setType}
+        onStatusChange={setStatus}
+        onReset={reset}
+      />
 
       {isPending && <Loader />}
       {isError && <Text c="red">{error.message}</Text>}

@@ -32,3 +32,17 @@ export const UNIT_STATUS_LABELS: Record<UnitStatus, string> = {
   repair: 'В ремонте',
   idle: 'Простой',
 }
+
+export interface UnitsQuery {
+  search: string
+  type: UnitType | null
+  status: UnitStatus | null
+  sort: UnitSortField
+  order: SortOrder
+  page: number
+}
+
+export interface UnitsPage {
+  items: Unit[]
+  total: number
+}

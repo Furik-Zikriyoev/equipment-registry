@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { Badge, Table } from '@mantine/core'
+import { Badge, Group, Table, Text, UnstyledButton } from '@mantine/core'
 
-import type { Unit, UnitStatus } from '../../types/unit'
+import type { SortOrder, Unit, UnitSortField, UnitStatus } from '../../types/unit'
 import { UNIT_STATUS_LABELS, UNIT_TYPE_LABELS } from '../../types/unit'
 import { formatDate } from '../../shared/lib/date'
 import { formatMileage } from '../../shared/lib/format'
@@ -12,11 +12,42 @@ const STATUS_COLORS: Record<UnitStatus, string> = {
   idle: 'gray',
 }
 
-interface UnitsTableProps {
-  units: Unit[]
+interface SortableHeaderProps {
+  field: UnitSortField
+  label: string
+  activeField: UnitSortField
+  order: SortOrder
+  onSortChange: (field: UnitSortField) => void
 }
 
-export function UnitsTable({ units }: UnitsTableProps) {
+function SortableHeader({ field, label, activeField, order, onSortChange }: SortableHeaderProps) {
+  const isActive = activeField === field
+  const indicator = isActive ? (order === 'asc' ? '↑' : '↓') : '↕'
+
+  return (
+    <Table.Th>
+      <UnstyledButton onClick={() => onSortChange(field)}>
+        <Group gap={6} wrap="nowrap">
+          <Text size="sm" fw={700}>
+            {label}
+          </Text>
+          <Text size="sm" c={isActive ? 'blue' : 'dimmed'}>
+            {indicator}
+          </Text>
+        </Group>
+      </UnstyledButton>
+    </Table.Th>
+  )
+}
+
+interface UnitsTableProps {
+  units: Unit[]
+  sort: UnitSortField
+  order: SortOrder
+  onSortChange: (field: UnitSortField) => void
+}
+
+export function UnitsTable({ units, sort, order, onSortChange }: UnitsTableProps) {
   const navigate = useNavigate()
 
   return (
@@ -27,8 +58,22 @@ export function UnitsTable({ units }: UnitsTableProps) {
           <Table.Th>Модель</Table.Th>
           <Table.Th>Тип</Table.Th>
           <Table.Th>Статус</Table.Th>
-          <Table.Th>Пробег</Table.Th>
-          <Table.Th>Дата последнего ТО</Table.Th>
+
+          <SortableHeader
+            field="mileage"
+            label="Пробег"
+            activeField={sort}
+            order={order}
+            onSortChange={onSortChange}
+          />
+
+          <SortableHeader
+            field="lastServiceDate"
+            label="Дата последнего ТО"
+            activeField={sort}
+            order={order}
+            onSortChange={onSortChange}
+          />
         </Table.Tr>
       </Table.Thead>
 

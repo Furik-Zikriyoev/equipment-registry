@@ -1,23 +1,34 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { RouterProvider } from "react-router-dom";
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { RouterProvider } from 'react-router-dom'
 
-import "@mantine/core/styles.css";
-import "@mantine/dates/styles.css";
+import '@mantine/core/styles.css'
+import '@mantine/dates/styles.css'
 
-import { AppProviders } from "./app/providers";
-import { router } from "./app/router";
+import { AppProviders } from './app/providers'
+import { router } from './app/router'
 
-const rootElement = document.getElementById("root");
+const rootElement = document.getElementById('root')
 
 if (!rootElement) {
-  throw new Error("Root element #root not found");
+  throw new Error('Root element #root not found')
 }
 
-createRoot(rootElement).render(
-  <StrictMode>
-    <AppProviders>
-      <RouterProvider router={router} />
-    </AppProviders>
-  </StrictMode>,
-);
+async function startMockServer(): Promise<void> {
+  const { worker } = await import('./mocks/browser')
+
+  await worker.start({
+    onUnhandledRequest: 'bypass',
+    serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
+  })
+}
+
+void startMockServer().then(() => {
+  createRoot(rootElement).render(
+    <StrictMode>
+      <AppProviders>
+        <RouterProvider router={router} />
+      </AppProviders>
+    </StrictMode>,
+  )
+})

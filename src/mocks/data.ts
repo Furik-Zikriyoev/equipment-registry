@@ -3,7 +3,7 @@ import { UNIT_STATUSES, UNIT_TYPES } from '../types/unit'
 import { toLocalIsoDate } from '../shared/lib/date'
 
 const MODELS_BY_TYPE: Record<UnitType, readonly string[]> = {
-  dump_truck: ['КамАЗ 6520', 'МАЗ 6501', 'Howo ZZ3257', 'Shacman SX3258', 'Volvo FMX 8x4'],
+  dump_truck: ['Камаз 6520', 'МАЗ 6501', 'Howo ZZ3257', 'Shacman SX3258', 'Volvo FMX 8x4'],
   excavator: ['Hitachi ZX200', 'Komatsu PC200', 'Caterpillar 320D', 'Hyundai R220LC', 'JCB JS220'],
   loader: ['Caterpillar 950M', 'Shantui SL50W', 'XCMG LW500FN', 'LiuGong CLG856', 'SDLG LG956L'],
 }

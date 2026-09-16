@@ -1,0 +1,14 @@
+.control {
+  border: 0;
+  background-color: transparent;
+  font-weight: 500;
+}
+
+.control:hover:not([data-active]) {
+  background-color: var(--mantine-color-gray-2);
+}
+
+.control[data-active] {
+  background-color: var(--mantine-color-blue-6);
+  color: var(--mantine-color-white);
+}

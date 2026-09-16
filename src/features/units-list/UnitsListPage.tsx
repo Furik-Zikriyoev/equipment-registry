@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Box, Button, Group, LoadingOverlay, Title } from '@mantine/core'
+import { Box, Button, Group, LoadingOverlay, Paper, Text, Title } from '@mantine/core'
+import { IconPlus } from '@tabler/icons-react'
 
 import { useUnits } from '../../hooks/useUnits'
 import { useUnitsSearchParams } from '../../hooks/useUnitsSearchParams'
@@ -86,25 +87,42 @@ export function UnitsListPage() {
 
   return (
     <>
-      <Group justify="space-between" mb="md">
-        <Title order={2}>Список техники</Title>
-        <Button component={Link} to="/units/new">
+      <Group justify="space-between" mb="lg">
+        <Group gap="sm" align="baseline">
+          <Title order={2}>Список техники</Title>
+          {data && (
+            <Text c="dimmed" size="xl" fw={500}>
+              {data.total}
+            </Text>
+          )}
+        </Group>
+
+        <Button
+          component={Link}
+          to="/units/new"
+          color="green"
+          leftSection={<IconPlus size={18} stroke={2.2} />}
+        >
           Добавить технику
         </Button>
       </Group>
 
-      <UnitsFilters
-        search={query.search}
-        type={query.type}
-        status={query.status}
-        hasActiveFilters={hasActiveFilters}
-        onSearchChange={setSearch}
-        onTypeChange={setType}
-        onStatusChange={setStatus}
-        onReset={reset}
-      />
+      <Paper withBorder radius="md" p="md" mb="md">
+        <UnitsFilters
+          search={query.search}
+          type={query.type}
+          status={query.status}
+          hasActiveFilters={hasActiveFilters}
+          onSearchChange={setSearch}
+          onTypeChange={setType}
+          onStatusChange={setStatus}
+          onReset={reset}
+        />
+      </Paper>
 
-      {renderContent()}
+      <Paper withBorder radius="md" p="md">
+        {renderContent()}
+      </Paper>
     </>
   )
 }

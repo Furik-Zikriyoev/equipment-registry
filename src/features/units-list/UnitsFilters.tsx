@@ -54,7 +54,7 @@ export function UnitsFilters({
   }, [debouncedValue, onSearchChange])
 
   return (
-    <Group mb="md" align="flex-end">
+    <Group align="flex-end">
       <TextInput
         label="Поиск"
         placeholder="Гос. номер или модель"

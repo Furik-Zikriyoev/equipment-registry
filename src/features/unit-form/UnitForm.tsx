@@ -2,12 +2,13 @@ import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, Group, Paper, Select, Stack, TextInput } from '@mantine/core'
+import { Alert, Button, Group, Modal, Paper, Select, Stack, Text, TextInput } from '@mantine/core'
 
 import type { UnitDraft } from '../../types/unit'
 import { UNIT_STATUSES, UNIT_STATUS_LABELS, UNIT_TYPES, UNIT_TYPE_LABELS } from '../../types/unit'
 import { checkPlateNumber } from '../../api/units'
 import { useSaveUnit } from '../../hooks/useSaveUnit'
+import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard'
 import { parseEnumValue } from '../../shared/lib/parse'
 import type { UnitFormValues } from './unitSchema'
 import { unitSchema } from './unitSchema'
@@ -37,12 +38,14 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
     control,
     register,
     handleSubmit,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isValid, isDirty, isSubmitting },
   } = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues,
     mode: 'onBlur',
   })
+
+  const guard = useUnsavedChangesGuard(isDirty)
 
   async function verifyPlateNumber(rawValue: string): Promise<void> {
     const plateNumber = rawValue.trim()
@@ -83,6 +86,7 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
     }
 
     await saveUnit.mutateAsync(draft)
+    guard.allowNavigation()
     navigate('/units')
   })
 
@@ -90,113 +94,135 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
   const isSaveDisabled = !isValid || plateStatus !== 'idle' || isSubmitting
 
   return (
-    <Paper withBorder p="lg" maw={560}>
-      <form
-        noValidate
-        onSubmit={(event) => {
-          void submit(event)
-        }}
+    <>
+      <Paper withBorder p="lg" maw={560}>
+        <form
+          noValidate
+          onSubmit={(event) => {
+            void submit(event)
+          }}
+        >
+          <Stack gap="md">
+            {saveUnit.isError && (
+              <Alert color="red" title="Не удалось сохранить">
+                {saveUnit.error.message}
+              </Alert>
+            )}
+
+            <TextInput
+              label="Гос. номер"
+              placeholder="01 A 123 AA"
+              withAsterisk
+              description={plateStatus === 'checking' ? 'Проверяем номер…' : undefined}
+              error={
+                errors.plateNumber?.message ??
+                (plateStatus === 'taken' ? 'Такой гос. номер уже используется' : undefined)
+              }
+              {...plateField}
+              onChange={(event) => {
+                setPlateStatus('idle')
+                void plateField.onChange(event)
+              }}
+              onBlur={(event) => {
+                void plateField.onBlur(event)
+                void verifyPlateNumber(event.currentTarget.value)
+              }}
+            />
+
+            <TextInput
+              label="Модель"
+              placeholder="КамАЗ 6520"
+              withAsterisk
+              error={errors.model?.message}
+              {...register('model')}
+            />
+
+            <Controller
+              control={control}
+              name="type"
+              render={({ field }) => (
+                <Select
+                  label="Тип"
+                  withAsterisk
+                  allowDeselect={false}
+                  data={TYPE_OPTIONS}
+                  value={field.value}
+                  onChange={(value) =>
+                    field.onChange(parseEnumValue(value, UNIT_TYPES) ?? field.value)
+                  }
+                  onBlur={field.onBlur}
+                  error={errors.type?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="status"
+              render={({ field }) => (
+                <Select
+                  label="Статус"
+                  withAsterisk
+                  allowDeselect={false}
+                  data={STATUS_OPTIONS}
+                  value={field.value}
+                  onChange={(value) =>
+                    field.onChange(parseEnumValue(value, UNIT_STATUSES) ?? field.value)
+                  }
+                  onBlur={field.onBlur}
+                  error={errors.status?.message}
+                />
+              )}
+            />
+
+            <TextInput
+              label="Пробег, км"
+              placeholder="124500"
+              inputMode="numeric"
+              withAsterisk
+              error={errors.mileage?.message}
+              {...register('mileage')}
+            />
+
+            <TextInput
+              label="Дата последнего ТО"
+              type="date"
+              withAsterisk
+              error={errors.lastServiceDate?.message}
+              {...register('lastServiceDate')}
+            />
+
+            <Group justify="flex-end" mt="sm">
+              <Button variant="default" onClick={() => navigate('/units')}>
+                Отмена
+              </Button>
+              <Button type="submit" loading={isSubmitting} disabled={isSaveDisabled}>
+                Сохранить
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      </Paper>
+
+      <Modal
+        opened={guard.isBlocked}
+        onClose={guard.cancelLeave}
+        title="Несохранённые изменения"
+        centered
       >
-        <Stack gap="md">
-          {saveUnit.isError && (
-            <Alert color="red" title="Не удалось сохранить">
-              {saveUnit.error.message}
-            </Alert>
-          )}
+        <Text size="sm">
+          В форме есть изменения, которые не были сохранены. Если уйти сейчас, они будут потеряны.
+        </Text>
 
-          <TextInput
-            label="Гос. номер"
-            placeholder="01 A 123 AA"
-            withAsterisk
-            description={plateStatus === 'checking' ? 'Проверяем номер…' : undefined}
-            error={
-              errors.plateNumber?.message ??
-              (plateStatus === 'taken' ? 'Такой гос. номер уже используется' : undefined)
-            }
-            {...plateField}
-            onChange={(event) => {
-              setPlateStatus('idle')
-              void plateField.onChange(event)
-            }}
-            onBlur={(event) => {
-              void plateField.onBlur(event)
-              void verifyPlateNumber(event.currentTarget.value)
-            }}
-          />
-
-          <TextInput
-            label="Модель"
-            placeholder="КамАЗ 6520"
-            withAsterisk
-            error={errors.model?.message}
-            {...register('model')}
-          />
-
-          <Controller
-            control={control}
-            name="type"
-            render={({ field }) => (
-              <Select
-                label="Тип"
-                withAsterisk
-                allowDeselect={false}
-                data={TYPE_OPTIONS}
-                value={field.value}
-                onChange={(value) =>
-                  field.onChange(parseEnumValue(value, UNIT_TYPES) ?? field.value)
-                }
-                onBlur={field.onBlur}
-                error={errors.type?.message}
-              />
-            )}
-          />
-
-          <Controller
-            control={control}
-            name="status"
-            render={({ field }) => (
-              <Select
-                label="Статус"
-                withAsterisk
-                allowDeselect={false}
-                data={STATUS_OPTIONS}
-                value={field.value}
-                onChange={(value) =>
-                  field.onChange(parseEnumValue(value, UNIT_STATUSES) ?? field.value)
-                }
-                onBlur={field.onBlur}
-                error={errors.status?.message}
-              />
-            )}
-          />
-
-          <TextInput
-            label="Пробег, км"
-            placeholder="124500"
-            inputMode="numeric"
-            withAsterisk
-            error={errors.mileage?.message}
-            {...register('mileage')}
-          />
-
-          <TextInput
-            label="Дата последнего ТО"
-            type="date"
-            withAsterisk
-            error={errors.lastServiceDate?.message}
-            {...register('lastServiceDate')}
-          />
-
-          <Group justify="flex-end" mt="sm">
-            <Button variant="default" onClick={() => navigate('/units')}>
-              Отмена
-            </Button>
-            <Button type="submit" loading={isSubmitting} disabled={isSaveDisabled}>
-              Сохранить
-            </Button>
-          </Group>
-        </Stack>
-      </form>
-    </Paper>
+        <Group justify="flex-end" mt="lg">
+          <Button variant="default" onClick={guard.cancelLeave}>
+            Остаться
+          </Button>
+          <Button color="red" onClick={guard.confirmLeave}>
+            Уйти без сохранения
+          </Button>
+        </Group>
+      </Modal>
+    </>
   )
 }

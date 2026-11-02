@@ -9,6 +9,7 @@ import { useUnitsSearchParams } from '../../hooks/useUnitsSearchParams'
 import { EmptyState } from '../../shared/ui/EmptyState'
 import { ErrorState } from '../../shared/ui/ErrorState'
 import { PageHeader } from '../../shared/ui/PageHeader'
+import { usePageTitle } from '../../shared/lib/usePageTitle'
 import { pluralize } from '../../shared/lib/format'
 import { UnitsCards } from './UnitsCards'
 import { UnitsFilters } from './UnitsFilters'
@@ -19,6 +20,7 @@ import { UnitsTableSkeleton } from './UnitsTableSkeleton'
 export function UnitsListPage() {
   const navigate = useNavigate()
   const isMobile = useMediaQuery('(max-width: 62em)')
+  usePageTitle('Техника')
 
   const { query, hasActiveFilters, setSearch, setType, setStatus, toggleSort, setPage, reset } =
     useUnitsSearchParams()

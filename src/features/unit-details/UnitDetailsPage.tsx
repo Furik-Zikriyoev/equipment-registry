@@ -24,6 +24,7 @@ import { useUnitHistory } from '../../hooks/useUnitHistory'
 import { formatDate } from '../../shared/lib/date'
 import { formatMileage, formatMoney, pluralize } from '../../shared/lib/format'
 import { getNextServiceDate } from '../../shared/lib/service'
+import { usePageTitle } from '../../shared/lib/usePageTitle'
 import { EmptyState } from '../../shared/ui/EmptyState'
 import { ErrorState } from '../../shared/ui/ErrorState'
 import { ServiceDue } from '../../shared/ui/ServiceDue'
@@ -201,6 +202,7 @@ export function UnitDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { data, isPending, isError, error, refetch } = useUnit(id)
+  usePageTitle(data ? `${data.plateNumber} · ${data.model}` : 'Карточка техники')
 
   function renderContent() {
     if (isPending) {

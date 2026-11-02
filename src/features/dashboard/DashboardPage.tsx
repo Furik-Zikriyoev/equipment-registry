@@ -25,6 +25,7 @@ import {
 import type { FleetStats } from '../../types/unit'
 import { UNIT_STATUSES, UNIT_STATUS_LABELS, UNIT_TYPES, UNIT_TYPE_LABELS } from '../../types/unit'
 import { useStats } from '../../hooks/useStats'
+import { usePageTitle } from '../../shared/lib/usePageTitle'
 import { formatDate } from '../../shared/lib/date'
 import { formatMileage, pluralize } from '../../shared/lib/format'
 import { getNextServiceDate } from '../../shared/lib/service'
@@ -208,6 +209,7 @@ function DashboardSkeleton() {
 
 export function DashboardPage() {
   const { data: stats, isPending, isError, error, refetch } = useStats()
+  usePageTitle('Обзор парка')
 
   return (
     <>

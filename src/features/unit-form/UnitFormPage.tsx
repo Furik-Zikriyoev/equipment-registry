@@ -3,6 +3,7 @@ import { Button, Skeleton, Stack } from '@mantine/core'
 import { IconArrowLeft } from '@tabler/icons-react'
 
 import { PageHeader } from '../../shared/ui/PageHeader'
+import { usePageTitle } from '../../shared/lib/usePageTitle'
 
 import { useUnit } from '../../hooks/useUnit'
 import { ErrorState } from '../../shared/ui/ErrorState'
@@ -27,6 +28,7 @@ export function UnitFormPage() {
   const { data, isPending, isError, error, refetch } = useUnit(id)
 
   const isEditMode = Boolean(id)
+  usePageTitle(isEditMode ? (data ? `Редактирование ${data.plateNumber}` : 'Редактирование') : 'Новая техника')
 
   function renderForm() {
     if (isEditMode && isPending) {

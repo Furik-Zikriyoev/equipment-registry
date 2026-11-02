@@ -3,7 +3,7 @@ import { Group, Stack, Table, Text, UnstyledButton } from '@mantine/core'
 import { IconArrowsSort, IconSortAscending, IconSortDescending } from '@tabler/icons-react'
 
 import type { SortOrder, Unit, UnitSortField } from '../../types/unit'
-import { UNIT_TYPE_LABELS } from '../../types/unit'
+import { useT } from '../../i18n/useT'
 import { formatDate } from '../../shared/lib/date'
 import { formatMileage } from '../../shared/lib/format'
 import { ServiceDue } from '../../shared/ui/ServiceDue'
@@ -21,12 +21,13 @@ interface SortableHeaderProps {
 }
 
 function SortableHeader({ field, label, activeField, order, onSortChange }: SortableHeaderProps) {
+  const t = useT()
   const isActive = activeField === field
   const SortIcon = !isActive ? IconArrowsSort : order === 'asc' ? IconSortAscending : IconSortDescending
 
   return (
     <Table.Th ta="right">
-      <UnstyledButton onClick={() => onSortChange(field)} aria-label={`Сортировать: ${label}`}>
+      <UnstyledButton onClick={() => onSortChange(field)} aria-label={t.list.sortBy(label)}>
         <Group gap={6} wrap="nowrap" justify="flex-end">
           <Text size="xs" fw={700} tt="uppercase" c={isActive ? undefined : 'dimmed'}>
             {label}
@@ -61,25 +62,26 @@ interface UnitsTableProps {
 
 export function UnitsTable({ units, sort, order, onSortChange }: UnitsTableProps) {
   const navigate = useNavigate()
+  const t = useT()
 
   return (
     <Table.ScrollContainer minWidth={760}>
       <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="md">
         <Table.Thead>
           <Table.Tr>
-            <HeaderCell>Техника</HeaderCell>
-            <HeaderCell w={130}>Тип</HeaderCell>
-            <HeaderCell w={140}>Статус</HeaderCell>
+            <HeaderCell>{t.list.colUnit}</HeaderCell>
+            <HeaderCell w={130}>{t.list.colType}</HeaderCell>
+            <HeaderCell w={140}>{t.list.colStatus}</HeaderCell>
             <SortableHeader
               field="mileage"
-              label="Пробег"
+              label={t.list.colMileage}
               activeField={sort}
               order={order}
               onSortChange={onSortChange}
             />
             <SortableHeader
               field="lastServiceDate"
-              label="Последнее ТО"
+              label={t.list.colLastService}
               activeField={sort}
               order={order}
               onSortChange={onSortChange}
@@ -108,7 +110,7 @@ export function UnitsTable({ units, sort, order, onSortChange }: UnitsTableProps
                 </Group>
               </Table.Td>
               <Table.Td>
-                <Text size="sm">{UNIT_TYPE_LABELS[unit.type]}</Text>
+                <Text size="sm">{t.unitType[unit.type]}</Text>
               </Table.Td>
               <Table.Td>
                 <StatusBadge status={unit.status} />

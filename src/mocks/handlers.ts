@@ -6,6 +6,8 @@ import { API_DELAY_MS, PAGE_SIZE } from '../shared/config'
 import { getNextServiceDate, getServiceState } from '../shared/lib/service'
 import { db } from './db'
 import { createHistory } from './history'
+import { getLang } from '../i18n/lang'
+import { messages } from '../i18n/useT'
 
 function emptyStatusCounter() {
   return Object.fromEntries(UNIT_STATUSES.map((status) => [status, 0])) as FleetStats['byStatus']
@@ -74,10 +76,10 @@ export const handlers = [
     const unit = typeof id === 'string' ? db.getById(id) : undefined
 
     if (!unit) {
-      return HttpResponse.json({ message: 'Единица техники не найдена' }, { status: 404 })
+      return HttpResponse.json({ message: messages().errors.unitNotFound }, { status: 404 })
     }
 
-    return HttpResponse.json(createHistory(unit))
+    return HttpResponse.json(createHistory(unit, getLang()))
   }),
 
   http.get('/api/units/check-plate', async ({ request }) => {
@@ -138,7 +140,7 @@ export const handlers = [
     const unit = typeof id === 'string' ? db.getById(id) : undefined
 
     if (!unit) {
-      return HttpResponse.json({ message: 'Единица техники не найдена' }, { status: 404 })
+      return HttpResponse.json({ message: messages().errors.unitNotFound }, { status: 404 })
     }
 
     return HttpResponse.json(unit)
@@ -150,7 +152,7 @@ export const handlers = [
     const draft = (await request.json()) as UnitDraft
 
     if (db.findByPlateNumber(draft.plateNumber)) {
-      return HttpResponse.json({ message: 'Гос. номер уже используется' }, { status: 409 })
+      return HttpResponse.json({ message: messages().errors.plateTaken }, { status: 409 })
     }
 
     return HttpResponse.json(db.create(draft), { status: 201 })
@@ -162,20 +164,20 @@ export const handlers = [
     const { id } = params
 
     if (typeof id !== 'string') {
-      return HttpResponse.json({ message: 'Некорректный идентификатор' }, { status: 400 })
+      return HttpResponse.json({ message: messages().errors.badId }, { status: 400 })
     }
 
     const draft = (await request.json()) as UnitDraft
     const duplicate = db.findByPlateNumber(draft.plateNumber)
 
     if (duplicate && duplicate.id !== id) {
-      return HttpResponse.json({ message: 'Гос. номер уже используется' }, { status: 409 })
+      return HttpResponse.json({ message: messages().errors.plateTaken }, { status: 409 })
     }
 
     const updated = db.update(id, draft)
 
     if (!updated) {
-      return HttpResponse.json({ message: 'Единица техники не найдена' }, { status: 404 })
+      return HttpResponse.json({ message: messages().errors.unitNotFound }, { status: 404 })
     }
 
     return HttpResponse.json(updated)

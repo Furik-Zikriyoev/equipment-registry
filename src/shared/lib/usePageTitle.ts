@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
 
-const APP_NAME = 'Техпарк'
+import { useT } from '../../i18n/useT'
 
-/** Заголовок вкладки: «Обзор парка — Техпарк» */
+/** Заголовок вкладки: «Обзор парка — Техпарк» / «Fleet overview — Techpark» */
 export function usePageTitle(title: string | undefined): void {
+  const t = useT()
   useEffect(() => {
-    document.title = title ? `${title} — ${APP_NAME}` : `${APP_NAME} — учёт строительной техники`
-  }, [title])
+    document.title = title ? `${title} — ${t.app.name}` : `${t.app.name} — ${t.app.tagline}`
+  }, [title, t])
 }

@@ -3,9 +3,11 @@ import { Button, Group, Stack, Text, ThemeIcon, Title } from '@mantine/core'
 import { IconArrowLeft, IconRoadSign } from '@tabler/icons-react'
 
 import { usePageTitle } from '../lib/usePageTitle'
+import { useT } from '../../i18n/useT'
 
 export function NotFoundPage() {
-  usePageTitle('Страница не найдена')
+  const t = useT()
+  usePageTitle(t.notFound.pageTitle)
 
   return (
     <Stack align="center" gap="md" py={80} ta="center">
@@ -16,17 +18,17 @@ export function NotFoundPage() {
         404
       </Text>
       <Title order={1} fz={{ base: 26, sm: 32 }} fw={800}>
-        Такой страницы нет
+        {t.notFound.title}
       </Title>
       <Text c="dimmed" maw={420}>
-        Возможно, ссылка устарела или в адресе опечатка. Вернитесь к обзору парка или к списку техники.
+        {t.notFound.text}
       </Text>
       <Group gap="sm" mt="sm">
         <Button component={Link} to="/dashboard" leftSection={<IconArrowLeft size={16} />}>
-          К обзору парка
+          {t.notFound.toDashboard}
         </Button>
         <Button component={Link} to="/units" variant="default">
-          Вся техника
+          {t.notFound.toList}
         </Button>
       </Group>
     </Stack>

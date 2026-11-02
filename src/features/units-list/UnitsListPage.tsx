@@ -10,7 +10,7 @@ import { EmptyState } from '../../shared/ui/EmptyState'
 import { ErrorState } from '../../shared/ui/ErrorState'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { usePageTitle } from '../../shared/lib/usePageTitle'
-import { pluralize } from '../../shared/lib/format'
+import { useT } from '../../i18n/useT'
 import { UnitsCards } from './UnitsCards'
 import { UnitsFilters } from './UnitsFilters'
 import { UnitsPagination } from './UnitsPagination'
@@ -20,7 +20,8 @@ import { UnitsTableSkeleton } from './UnitsTableSkeleton'
 export function UnitsListPage() {
   const navigate = useNavigate()
   const isMobile = useMediaQuery('(max-width: 62em)')
-  usePageTitle('Техника')
+  const t = useT()
+  usePageTitle(t.list.title)
 
   const { query, hasActiveFilters, setSearch, setType, setStatus, toggleSort, setPage, reset } =
     useUnitsSearchParams()
@@ -50,16 +51,16 @@ export function UnitsListPage() {
     if (data.total === 0) {
       return hasActiveFilters ? (
         <EmptyState
-          title="Ничего не найдено"
-          description="По заданным условиям техника не найдена. Попробуйте изменить или сбросить фильтры."
-          actionLabel="Сбросить фильтры"
+          title={t.list.notFoundTitle}
+          description={t.list.notFoundText}
+          actionLabel={t.list.resetFilters}
           onAction={reset}
         />
       ) : (
         <EmptyState
-          title="Техника ещё не добавлена"
-          description="В реестре пока нет ни одной единицы техники."
-          actionLabel="Добавить технику"
+          title={t.list.emptyTitle}
+          description={t.list.emptyText}
+          actionLabel={t.list.add}
           onAction={() => navigate('/units/new')}
         />
       )
@@ -68,9 +69,9 @@ export function UnitsListPage() {
     if (data.items.length === 0) {
       return (
         <EmptyState
-          title="На этой странице пусто"
-          description={`Всего записей: ${data.total}. Похоже, страница за пределами диапазона.`}
-          actionLabel="На первую страницу"
+          title={t.list.pageEmptyTitle}
+          description={t.list.pageEmptyText(data.total)}
+          actionLabel={t.list.firstPage}
           onAction={() => setPage(1)}
         />
       )
@@ -99,11 +100,13 @@ export function UnitsListPage() {
   return (
     <>
       <PageHeader
-        title="Техника"
+        title={t.list.title}
         description={
           data
-            ? `${data.total} ${pluralize(data.total, ['единица', 'единицы', 'единиц'])}${hasActiveFilters ? ' по выбранным условиям' : ' в парке'}`
-            : 'Все машины парка: статусы, пробег и обслуживание'
+            ? hasActiveFilters
+              ? t.list.filtered(t.units.count(data.total))
+              : t.list.inFleet(t.units.count(data.total))
+            : t.list.subtitle
         }
         actions={
           <Button
@@ -112,7 +115,7 @@ export function UnitsListPage() {
             size="md"
             leftSection={<IconPlus size={18} stroke={2.2} />}
           >
-            Добавить технику
+            {t.list.add}
           </Button>
         }
       />

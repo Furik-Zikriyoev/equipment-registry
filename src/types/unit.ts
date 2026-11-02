@@ -21,18 +21,6 @@ export interface Unit {
 
 export type UnitDraft = Omit<Unit, 'id'>
 
-export const UNIT_TYPE_LABELS: Record<UnitType, string> = {
-  dump_truck: 'Самосвал',
-  excavator: 'Экскаватор',
-  loader: 'Погрузчик',
-}
-
-export const UNIT_STATUS_LABELS: Record<UnitStatus, string> = {
-  working: 'Работает',
-  repair: 'В ремонте',
-  idle: 'Простой',
-}
-
 export interface UnitsQuery {
   search: string
   type: UnitType | null
@@ -49,11 +37,6 @@ export interface UnitsPage {
 
 export const SERVICE_KINDS = ['service', 'repair'] as const
 export type ServiceKind = (typeof SERVICE_KINDS)[number]
-
-export const SERVICE_KIND_LABELS: Record<ServiceKind, string> = {
-  service: 'Плановое ТО',
-  repair: 'Ремонт',
-}
 
 export interface ServiceRecord {
   id: string

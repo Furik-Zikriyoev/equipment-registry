@@ -4,16 +4,11 @@ import { useDebouncedValue } from '@mantine/hooks'
 import { IconSearch } from '@tabler/icons-react'
 
 import type { UnitStatus, UnitType } from '../../types/unit'
-import { UNIT_STATUSES, UNIT_STATUS_LABELS, UNIT_TYPES, UNIT_TYPE_LABELS } from '../../types/unit'
+import { UNIT_STATUSES, UNIT_TYPES } from '../../types/unit'
+import { useT } from '../../i18n/useT'
 import { SEARCH_DEBOUNCE_MS } from '../../shared/config'
 import { parseEnumValue } from '../../shared/lib/parse'
 
-const TYPE_OPTIONS = UNIT_TYPES.map((type) => ({ value: type, label: UNIT_TYPE_LABELS[type] }))
-
-const STATUS_OPTIONS = UNIT_STATUSES.map((status) => ({
-  value: status,
-  label: UNIT_STATUS_LABELS[status],
-}))
 
 interface UnitsFiltersProps {
   search: string
@@ -36,6 +31,9 @@ export function UnitsFilters({
   onStatusChange,
   onReset,
 }: UnitsFiltersProps) {
+  const t = useT()
+  const typeOptions = UNIT_TYPES.map((value) => ({ value, label: t.unitType[value] }))
+  const statusOptions = UNIT_STATUSES.map((value) => ({ value, label: t.unitStatus[value] }))
   const [inputValue, setInputValue] = useState(search)
   const [debouncedValue] = useDebouncedValue(inputValue, SEARCH_DEBOUNCE_MS)
   const syncedValueRef = useRef(search)
@@ -57,8 +55,8 @@ export function UnitsFilters({
   return (
     <Group align="flex-end">
       <TextInput
-        label="Поиск"
-        placeholder="Гос. номер или модель"
+        label={t.list.search}
+        placeholder={t.list.searchPlaceholder}
         value={inputValue}
         onChange={(event) => setInputValue(event.currentTarget.value)}
         leftSection={<IconSearch size={16} stroke={1.8} />}
@@ -66,9 +64,9 @@ export function UnitsFilters({
       />
 
       <Select
-        label="Тип"
-        placeholder="Все"
-        data={TYPE_OPTIONS}
+        label={t.list.type}
+        placeholder={t.list.any}
+        data={typeOptions}
         value={type}
         onChange={(value) => onTypeChange(parseEnumValue(value, UNIT_TYPES))}
         clearable
@@ -76,9 +74,9 @@ export function UnitsFilters({
       />
 
       <Select
-        label="Статус"
-        placeholder="Все"
-        data={STATUS_OPTIONS}
+        label={t.list.status}
+        placeholder={t.list.any}
+        data={statusOptions}
         value={status}
         onChange={(value) => onStatusChange(parseEnumValue(value, UNIT_STATUSES))}
         clearable
@@ -86,7 +84,7 @@ export function UnitsFilters({
       />
 
       <Button variant="subtle" color="gray" onClick={onReset} disabled={!hasActiveFilters}>
-        Сбросить
+        {t.list.reset}
       </Button>
     </Group>
   )

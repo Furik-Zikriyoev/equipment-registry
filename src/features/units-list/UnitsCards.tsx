@@ -7,11 +7,13 @@ import { formatMileage } from '../../shared/lib/format'
 import { ServiceDue } from '../../shared/ui/ServiceDue'
 import { StatusBadge } from '../../shared/ui/StatusBadge'
 import { UnitTypeIcon } from '../../shared/ui/UnitTypeIcon'
+import { useT } from '../../i18n/useT'
 
 const NUMERIC_STYLE = { fontVariantNumeric: 'tabular-nums' } as const
 
 /** Список техники для телефона: вместо таблицы — карточки */
 export function UnitsCards({ units }: { units: Unit[] }) {
+  const t = useT()
   return (
     <Stack gap="sm">
       {units.map((unit) => (
@@ -45,7 +47,7 @@ export function UnitsCards({ units }: { units: Unit[] }) {
                 {formatMileage(unit.mileage)}
               </Text>
               <Text size="sm" c="dimmed" style={NUMERIC_STYLE}>
-                ТО {formatDate(unit.lastServiceDate)}
+                {t.service.short} {formatDate(unit.lastServiceDate)}
               </Text>
             </Group>
 

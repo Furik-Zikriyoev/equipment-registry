@@ -1,3 +1,5 @@
+import { messages } from '../i18n/useT'
+
 export class ApiError extends Error {
   readonly status: number
 
@@ -38,7 +40,7 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
 
     throw new ApiError(
       response.status,
-      extractMessage(body, `Запрос завершился с ошибкой ${response.status}`),
+      extractMessage(body, messages().errors.request(response.status)),
     )
   }
 

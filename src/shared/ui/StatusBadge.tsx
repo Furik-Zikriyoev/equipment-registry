@@ -1,7 +1,7 @@
 import { Badge, Box, type MantineSize } from '@mantine/core'
 
 import type { UnitStatus } from '../../types/unit'
-import { UNIT_STATUS_LABELS } from '../../types/unit'
+import { useT } from '../../i18n/useT'
 
 export const STATUS_COLORS: Record<UnitStatus, string> = {
   working: 'teal',
@@ -15,6 +15,7 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
+  const t = useT()
   const color = STATUS_COLORS[status]
 
   return (
@@ -27,7 +28,7 @@ export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
       fw={600}
       leftSection={<Box w={6} h={6} bg={`${color}.6`} style={{ borderRadius: '50%' }} />}
     >
-      {UNIT_STATUS_LABELS[status]}
+      {t.unitStatus[status]}
     </Badge>
   )
 }

@@ -23,11 +23,12 @@ import {
 } from '@tabler/icons-react'
 
 import type { FleetStats } from '../../types/unit'
-import { UNIT_STATUSES, UNIT_STATUS_LABELS, UNIT_TYPES, UNIT_TYPE_LABELS } from '../../types/unit'
+import { UNIT_STATUSES, UNIT_TYPES } from '../../types/unit'
+import { useT } from '../../i18n/useT'
 import { useStats } from '../../hooks/useStats'
 import { usePageTitle } from '../../shared/lib/usePageTitle'
 import { formatDate } from '../../shared/lib/date'
-import { formatMileage, pluralize } from '../../shared/lib/format'
+import { formatMileage } from '../../shared/lib/format'
 import { getNextServiceDate } from '../../shared/lib/service'
 import { ErrorState } from '../../shared/ui/ErrorState'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -51,11 +52,12 @@ function SectionTitle({ children }: { children: string }) {
 }
 
 function Readiness({ stats }: { stats: FleetStats }) {
+  const t = useT()
   const ready = percent(stats.byStatus.working, stats.total)
 
   return (
     <Paper withBorder radius="lg" p="lg" h="100%">
-      <SectionTitle>Готовность парка</SectionTitle>
+      <SectionTitle>{t.dashboard.readiness}</SectionTitle>
       <Group gap="xl" wrap="nowrap" align="center">
         <RingProgress
           size={160}
@@ -64,7 +66,7 @@ function Readiness({ stats }: { stats: FleetStats }) {
           sections={UNIT_STATUSES.map((status) => ({
             value: percent(stats.byStatus[status], stats.total),
             color: `${STATUS_COLORS[status]}.6`,
-            tooltip: `${UNIT_STATUS_LABELS[status]}: ${stats.byStatus[status]}`,
+            tooltip: `${t.unitStatus[status]}: ${stats.byStatus[status]}`,
           }))}
           label={
             <Stack gap={0} align="center">
@@ -72,7 +74,7 @@ function Readiness({ stats }: { stats: FleetStats }) {
                 {ready}%
               </Text>
               <Text size="xs" c="dimmed">
-                в работе
+                {t.dashboard.inWork}
               </Text>
             </Stack>
           }
@@ -82,7 +84,7 @@ function Readiness({ stats }: { stats: FleetStats }) {
             <Group key={status} justify="space-between" wrap="nowrap">
               <Group gap={8} wrap="nowrap">
                 <Box w={10} h={10} bg={`${STATUS_COLORS[status]}.6`} style={{ borderRadius: 3 }} />
-                <Text size="sm">{UNIT_STATUS_LABELS[status]}</Text>
+                <Text size="sm">{t.unitStatus[status]}</Text>
               </Group>
               <Text size="sm" fw={700} style={NUMERIC_STYLE}>
                 {stats.byStatus[status]}
@@ -96,9 +98,10 @@ function Readiness({ stats }: { stats: FleetStats }) {
 }
 
 function ByType({ stats }: { stats: FleetStats }) {
+  const t = useT()
   return (
     <Paper withBorder radius="lg" p="lg" h="100%">
-      <SectionTitle>Парк по типам</SectionTitle>
+      <SectionTitle>{t.dashboard.byType}</SectionTitle>
       <Stack gap="lg">
         {UNIT_TYPES.map((type) => {
           const counts = stats.byType[type]
@@ -109,10 +112,10 @@ function ByType({ stats }: { stats: FleetStats }) {
               <Group justify="space-between" wrap="nowrap">
                 <Group gap="sm" wrap="nowrap">
                   <UnitTypeIcon type={type} size={30} />
-                  <Text fw={600}>{UNIT_TYPE_LABELS[type]}</Text>
+                  <Text fw={600}>{t.unitType[type]}</Text>
                 </Group>
                 <Text size="sm" c="dimmed" style={NUMERIC_STYLE}>
-                  {total} {pluralize(total, ['машина', 'машины', 'машин'])}
+                  {t.units.cars(total)}
                 </Text>
               </Group>
               <Progress.Root size={12} radius="xl">
@@ -121,7 +124,7 @@ function ByType({ stats }: { stats: FleetStats }) {
                     key={status}
                     value={percent(counts[status], total)}
                     color={`${STATUS_COLORS[status]}.6`}
-                    title={`${UNIT_STATUS_LABELS[status]}: ${counts[status]}`}
+                    title={`${t.unitStatus[status]}: ${counts[status]}`}
                   />
                 ))}
               </Progress.Root>
@@ -134,11 +137,12 @@ function ByType({ stats }: { stats: FleetStats }) {
 }
 
 function Attention({ stats }: { stats: FleetStats }) {
+  const t = useT()
   return (
     <Paper withBorder radius="lg" p="lg">
       <Group justify="space-between" mb="md">
         <Title order={3} fz="lg" fw={700}>
-          Ближайшее обслуживание
+          {t.dashboard.upcoming}
         </Title>
         <Button
           component={Link}
@@ -148,13 +152,13 @@ function Attention({ stats }: { stats: FleetStats }) {
           size="compact-sm"
           rightSection={<IconArrowRight size={14} />}
         >
-          Все по дате ТО
+          {t.dashboard.byServiceDate}
         </Button>
       </Group>
 
       {stats.attention.length === 0 ? (
         <Text c="dimmed" size="sm">
-          Вся техника обслужена вовремя.
+          {t.dashboard.allServiced}
         </Text>
       ) : (
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
@@ -177,7 +181,7 @@ function Attention({ stats }: { stats: FleetStats }) {
                       {unit.plateNumber}
                     </Text>
                     <Text size="xs" c="dimmed">
-                      {unit.model} · до {formatDate(getNextServiceDate(unit.lastServiceDate))}
+                      {unit.model} · {t.dashboard.dueBy(formatDate(getNextServiceDate(unit.lastServiceDate)))}
                     </Text>
                   </Stack>
                 </Group>
@@ -209,13 +213,14 @@ function DashboardSkeleton() {
 
 export function DashboardPage() {
   const { data: stats, isPending, isError, error, refetch } = useStats()
-  usePageTitle('Обзор парка')
+  const t = useT()
+  usePageTitle(t.dashboard.title)
 
   return (
     <>
       <PageHeader
-        title="Обзор парка"
-        description="Состояние техники и обслуживание на сегодня"
+        title={t.dashboard.title}
+        description={t.dashboard.subtitle}
         actions={
           <Button
             component={Link}
@@ -223,7 +228,7 @@ export function DashboardPage() {
             variant="default"
             rightSection={<IconArrowRight size={16} />}
           >
-            Вся техника
+            {t.dashboard.allUnits}
           </Button>
         }
       />
@@ -240,30 +245,30 @@ export function DashboardPage() {
         <Stack gap="md">
           <SimpleGrid cols={{ base: 2, md: 4 }} spacing="md">
             <StatTile
-              label="Всего техники"
+              label={t.dashboard.total}
               value={stats.total}
-              hint={`Общий пробег ${formatMileage(stats.totalMileage)}`}
+              hint={t.dashboard.totalHint(formatMileage(stats.totalMileage))}
               icon={<IconTruck size={18} />}
               color="brand"
             />
             <StatTile
-              label="В работе"
+              label={t.dashboard.working}
               value={stats.byStatus.working}
-              hint={`${percent(stats.byStatus.working, stats.total)}% парка`}
+              hint={t.dashboard.workingHint(percent(stats.byStatus.working, stats.total))}
               icon={<IconCircleCheck size={18} />}
               color="teal"
             />
             <StatTile
-              label="В ремонте"
+              label={t.dashboard.repair}
               value={stats.byStatus.repair}
-              hint={`Простой: ${stats.byStatus.idle}`}
+              hint={t.dashboard.repairHint(stats.byStatus.idle)}
               icon={<IconTool size={18} />}
               color="orange"
             />
             <StatTile
-              label="Требуют ТО"
+              label={t.dashboard.needService}
               value={stats.serviceOverdue + stats.serviceSoon}
-              hint={`Просрочено: ${stats.serviceOverdue}`}
+              hint={t.dashboard.needServiceHint(stats.serviceOverdue)}
               icon={<IconAlertTriangle size={18} />}
               color="red"
             />

@@ -4,6 +4,7 @@ import { IconArrowLeft } from '@tabler/icons-react'
 
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { usePageTitle } from '../../shared/lib/usePageTitle'
+import { useT } from '../../i18n/useT'
 
 import { useUnit } from '../../hooks/useUnit'
 import { ErrorState } from '../../shared/ui/ErrorState'
@@ -27,8 +28,9 @@ export function UnitFormPage() {
   const navigate = useNavigate()
   const { data, isPending, isError, error, refetch } = useUnit(id)
 
+  const t = useT()
   const isEditMode = Boolean(id)
-  usePageTitle(isEditMode ? (data ? `Редактирование ${data.plateNumber}` : 'Редактирование') : 'Новая техника')
+  usePageTitle(isEditMode ? (data ? t.form.editPageTitle(data.plateNumber) : t.form.editTitle) : t.form.newTitle)
 
   function renderForm() {
     if (isEditMode && isPending) {
@@ -48,9 +50,9 @@ export function UnitFormPage() {
       if (isNotFound) {
         return (
           <EmptyState
-            title="Единица техники не найдена"
-            description="Запись была удалена, либо ссылка указана неверно."
-            actionLabel="К списку техники"
+            title={t.details.notFoundTitle}
+            description={t.details.notFoundText}
+            actionLabel={t.details.toList}
             onAction={() => navigate('/units')}
           />
         )
@@ -62,7 +64,7 @@ export function UnitFormPage() {
           onRetry={() => {
             void refetch()
           }}
-          secondaryLabel="К списку"
+          secondaryLabel={t.form.toList}
           onSecondary={() => navigate('/units')}
         />
       )
@@ -85,11 +87,11 @@ export function UnitFormPage() {
   return (
     <>
       <PageHeader
-        title={isEditMode ? 'Редактирование' : 'Новая техника'}
+        title={isEditMode ? t.form.editTitle : t.form.newTitle}
         description={
           isEditMode && data
             ? `${data.plateNumber} · ${data.model}`
-            : 'Заполните данные машины. Гос. номер проверяется на уникальность'
+            : t.form.newHint
         }
         actions={
           <Button
@@ -97,7 +99,7 @@ export function UnitFormPage() {
             leftSection={<IconArrowLeft size={16} />}
             onClick={() => navigate(isEditMode && id ? `/units/${id}` : '/units')}
           >
-            {isEditMode ? 'К карточке' : 'К списку'}
+            {isEditMode ? t.form.toCard : t.form.toList}
           </Button>
         }
       />

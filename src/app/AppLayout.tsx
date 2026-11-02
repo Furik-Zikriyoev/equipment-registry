@@ -4,13 +4,17 @@ import { useDisclosure } from '@mantine/hooks'
 import type { Icon } from '@tabler/icons-react'
 import { IconLayoutDashboard, IconPlus, IconTruck } from '@tabler/icons-react'
 
+import { useLang, useT } from '../i18n/useT'
+import { intlLocale } from '../i18n/lang'
+import type { Messages } from '../i18n/messages'
+import { LangSwitch } from '../shared/ui/LangSwitch'
 import { Logo } from '../shared/ui/Logo'
 import { ThemeToggle } from '../shared/ui/ThemeToggle'
 import classes from './AppLayout.module.css'
 
 interface NavItem {
   to: string
-  label: string
+  label: (t: Messages) => string
   icon: Icon
   isActive: (pathname: string) => boolean
 }
@@ -18,34 +22,36 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   {
     to: '/dashboard',
-    label: 'Обзор',
+    label: (t) => t.nav.dashboard,
     icon: IconLayoutDashboard,
     isActive: (pathname) => pathname === '/dashboard',
   },
   {
     to: '/units',
-    label: 'Техника',
+    label: (t) => t.nav.units,
     icon: IconTruck,
     isActive: (pathname) => pathname.startsWith('/units') && pathname !== '/units/new',
   },
   {
     to: '/units/new',
-    label: 'Добавить технику',
+    label: (t) => t.nav.add,
     icon: IconPlus,
     isActive: (pathname) => pathname === '/units/new',
   },
 ]
 
-const todayText = new Intl.DateTimeFormat('ru-RU', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-}).format(new Date())
-const todayLabel = todayText.charAt(0).toUpperCase() + todayText.slice(1)
+function todayLabel(locale: string): string {
+  const text = new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(
+    new Date(),
+  )
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
 
 export function AppLayout() {
   const [opened, { toggle, close }] = useDisclosure()
   const { pathname } = useLocation()
+  const t = useT()
+  const lang = useLang()
 
   return (
     <AppShell
@@ -61,20 +67,21 @@ export function AppLayout() {
               onClick={toggle}
               hiddenFrom="sm"
               size="sm"
-              aria-label="Открыть меню"
+              aria-label={t.app.openMenu}
             />
             <Stack hiddenFrom="sm">
               <Logo compact />
             </Stack>
             <Text visibleFrom="sm" size="sm" c="dimmed">
-              {todayLabel}
+              {todayLabel(intlLocale(lang))}
             </Text>
           </Group>
 
           <Group gap="xs" wrap="nowrap">
             <Badge variant="light" color="gray" radius="sm" visibleFrom="xs">
-              Демо-данные
+              {t.app.demoBadge}
             </Badge>
+            <LangSwitch />
             <ThemeToggle />
           </Group>
         </Group>
@@ -92,7 +99,7 @@ export function AppLayout() {
                 key={item.to}
                 component={Link}
                 to={item.to}
-                label={item.label}
+                label={item.label(t)}
                 leftSection={<item.icon size={20} stroke={1.7} />}
                 active={item.isActive(pathname)}
                 variant="light"
@@ -106,7 +113,7 @@ export function AppLayout() {
 
         <AppShell.Section>
           <Text size="xs" c="dimmed" lh={1.5}>
-            Демо-версия. Данные генерируются в браузере и сбрасываются при перезагрузке страницы.
+            {t.app.demoNote}
           </Text>
         </AppShell.Section>
       </AppShell.Navbar>

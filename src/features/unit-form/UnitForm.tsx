@@ -5,7 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Group, Modal, Paper, Select, Stack, Text, TextInput } from '@mantine/core'
 
 import type { UnitDraft } from '../../types/unit'
-import { UNIT_STATUSES, UNIT_STATUS_LABELS, UNIT_TYPES, UNIT_TYPE_LABELS } from '../../types/unit'
+import { UNIT_STATUSES, UNIT_TYPES } from '../../types/unit'
+import { useT } from '../../i18n/useT'
+import type { Messages } from '../../i18n/messages'
 import { checkPlateNumber } from '../../api/units'
 import { useSaveUnit } from '../../hooks/useSaveUnit'
 import { useUnsavedChangesGuard } from '../../hooks/useUnsavedChangesGuard'
@@ -13,12 +15,13 @@ import { parseEnumValue } from '../../shared/lib/parse'
 import type { UnitFormValues } from './unitSchema'
 import { unitSchema } from './unitSchema'
 
-const TYPE_OPTIONS = UNIT_TYPES.map((type) => ({ value: type, label: UNIT_TYPE_LABELS[type] }))
+type ErrorKey = keyof Messages['form']['errors']
 
-const STATUS_OPTIONS = UNIT_STATUSES.map((status) => ({
-  value: status,
-  label: UNIT_STATUS_LABELS[status],
-}))
+/** Сообщения схемы — ключи; здесь превращаем их в текст на текущем языке. */
+function errorText(t: Messages, message: string | undefined): string | undefined {
+  if (!message) return undefined
+  return message in t.form.errors ? t.form.errors[message as ErrorKey] : message
+}
 
 type PlateStatus = 'idle' | 'checking' | 'taken'
 
@@ -29,7 +32,10 @@ interface UnitFormProps {
 
 export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
   const navigate = useNavigate()
+  const t = useT()
   const saveUnit = useSaveUnit(unitId)
+  const TYPE_OPTIONS = UNIT_TYPES.map((type) => ({ value: type, label: t.unitType[type] }))
+  const STATUS_OPTIONS = UNIT_STATUSES.map((status) => ({ value: status, label: t.unitStatus[status] }))
 
   const [plateStatus, setPlateStatus] = useState<PlateStatus>('idle')
   const plateRequestIdRef = useRef(0)
@@ -104,19 +110,19 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
         >
           <Stack gap="md">
             {saveUnit.isError && (
-              <Alert color="red" title="Не удалось сохранить">
+              <Alert color="red" title={t.form.saveError}>
                 {saveUnit.error.message}
               </Alert>
             )}
 
             <TextInput
-              label="Гос. номер"
+              label={t.form.plate}
               placeholder="01 A 123 AA"
               withAsterisk
-              description={plateStatus === 'checking' ? 'Проверяем номер…' : undefined}
+              description={plateStatus === 'checking' ? t.form.checkingPlate : undefined}
               error={
-                errors.plateNumber?.message ??
-                (plateStatus === 'taken' ? 'Такой гос. номер уже используется' : undefined)
+                errorText(t, errors.plateNumber?.message) ??
+                (plateStatus === 'taken' ? t.form.plateTaken : undefined)
               }
               {...plateField}
               onChange={(event) => {
@@ -130,10 +136,10 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
             />
 
             <TextInput
-              label="Модель"
-              placeholder="КамАЗ 6520"
+              label={t.form.model}
+              placeholder={t.form.modelPlaceholder}
               withAsterisk
-              error={errors.model?.message}
+              error={errorText(t, errors.model?.message)}
               {...register('model')}
             />
 
@@ -142,7 +148,7 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
               name="type"
               render={({ field }) => (
                 <Select
-                  label="Тип"
+                  label={t.form.type}
                   withAsterisk
                   allowDeselect={false}
                   data={TYPE_OPTIONS}
@@ -151,7 +157,7 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
                     field.onChange(parseEnumValue(value, UNIT_TYPES) ?? field.value)
                   }
                   onBlur={field.onBlur}
-                  error={errors.type?.message}
+                  error={errorText(t, errors.type?.message)}
                 />
               )}
             />
@@ -161,7 +167,7 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
               name="status"
               render={({ field }) => (
                 <Select
-                  label="Статус"
+                  label={t.form.status}
                   withAsterisk
                   allowDeselect={false}
                   data={STATUS_OPTIONS}
@@ -170,34 +176,34 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
                     field.onChange(parseEnumValue(value, UNIT_STATUSES) ?? field.value)
                   }
                   onBlur={field.onBlur}
-                  error={errors.status?.message}
+                  error={errorText(t, errors.status?.message)}
                 />
               )}
             />
 
             <TextInput
-              label="Пробег, км"
+              label={t.form.mileage}
               placeholder="124500"
               inputMode="numeric"
               withAsterisk
-              error={errors.mileage?.message}
+              error={errorText(t, errors.mileage?.message)}
               {...register('mileage')}
             />
 
             <TextInput
-              label="Дата последнего ТО"
+              label={t.form.lastService}
               type="date"
               withAsterisk
-              error={errors.lastServiceDate?.message}
+              error={errorText(t, errors.lastServiceDate?.message)}
               {...register('lastServiceDate')}
             />
 
             <Group justify="flex-end" mt="sm">
               <Button variant="default" onClick={() => navigate(unitId ? `/units/${unitId}` : '/units')}>
-                Отмена
+                {t.form.cancel}
               </Button>
               <Button type="submit" loading={isSubmitting} disabled={isSaveDisabled}>
-                Сохранить
+                {t.form.save}
               </Button>
             </Group>
           </Stack>
@@ -207,19 +213,19 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
       <Modal
         opened={guard.isBlocked}
         onClose={guard.cancelLeave}
-        title="Несохранённые изменения"
+        title={t.form.unsavedTitle}
         centered
       >
         <Text size="sm">
-          В форме есть изменения, которые не были сохранены. Если уйти сейчас, они будут потеряны.
+          {t.form.unsavedText}
         </Text>
 
         <Group justify="flex-end" mt="lg">
           <Button variant="default" onClick={guard.cancelLeave}>
-            Остаться
+            {t.form.stay}
           </Button>
           <Button color="red" onClick={guard.confirmLeave}>
-            Уйти без сохранения
+            {t.form.leave}
           </Button>
         </Group>
       </Modal>

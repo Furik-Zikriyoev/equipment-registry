@@ -85,9 +85,9 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
       lastServiceDate: values.lastServiceDate,
     }
 
-    await saveUnit.mutateAsync(draft)
+    const saved = await saveUnit.mutateAsync(draft)
     guard.allowNavigation()
-    navigate('/units')
+    navigate(`/units/${saved.id}`)
   })
 
   const plateField = register('plateNumber')
@@ -95,7 +95,7 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
 
   return (
     <>
-      <Paper withBorder p="lg" maw={560}>
+      <Paper withBorder radius="lg" p={{ base: 'md', sm: 'xl' }} maw={640}>
         <form
           noValidate
           onSubmit={(event) => {
@@ -193,7 +193,7 @@ export function UnitForm({ unitId, defaultValues }: UnitFormProps) {
             />
 
             <Group justify="flex-end" mt="sm">
-              <Button variant="default" onClick={() => navigate('/units')}>
+              <Button variant="default" onClick={() => navigate(unitId ? `/units/${unitId}` : '/units')}>
                 Отмена
               </Button>
               <Button type="submit" loading={isSubmitting} disabled={isSaveDisabled}>

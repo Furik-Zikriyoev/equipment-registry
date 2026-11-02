@@ -1,8 +1,52 @@
 import { delay, http, HttpResponse } from 'msw'
 
-import type { Unit, UnitDraft } from '../types/unit'
+import type { FleetStats, Unit, UnitDraft } from '../types/unit'
+import { UNIT_STATUSES, UNIT_TYPES } from '../types/unit'
 import { API_DELAY_MS, PAGE_SIZE } from '../shared/config'
+import { getNextServiceDate, getServiceState } from '../shared/lib/service'
 import { db } from './db'
+import { createHistory } from './history'
+
+function emptyStatusCounter() {
+  return Object.fromEntries(UNIT_STATUSES.map((status) => [status, 0])) as FleetStats['byStatus']
+}
+
+function buildStats(units: Unit[]): FleetStats {
+  const byStatus = emptyStatusCounter()
+  const byType = Object.fromEntries(
+    UNIT_TYPES.map((type) => [type, emptyStatusCounter()]),
+  ) as FleetStats['byType']
+
+  let totalMileage = 0
+  let serviceOverdue = 0
+  let serviceSoon = 0
+  const attention: Unit[] = []
+
+  for (const unit of units) {
+    byStatus[unit.status] += 1
+    byType[unit.type][unit.status] += 1
+    totalMileage += unit.mileage
+
+    const state = getServiceState(unit.lastServiceDate)
+    if (state === 'overdue') serviceOverdue += 1
+    if (state === 'soon') serviceSoon += 1
+    if (state !== 'ok') attention.push(unit)
+  }
+
+  attention.sort((left, right) =>
+    getNextServiceDate(left.lastServiceDate).localeCompare(getNextServiceDate(right.lastServiceDate)),
+  )
+
+  return {
+    total: units.length,
+    totalMileage,
+    byStatus,
+    byType,
+    serviceOverdue,
+    serviceSoon,
+    attention: attention.slice(0, 6),
+  }
+}
 
 function sortUnits(units: Unit[], sort: string, order: string): Unit[] {
   const direction = order === 'desc' ? -1 : 1
@@ -17,6 +61,25 @@ function sortUnits(units: Unit[], sort: string, order: string): Unit[] {
 }
 
 export const handlers = [
+  http.get('/api/stats', async () => {
+    await delay(API_DELAY_MS)
+
+    return HttpResponse.json(buildStats(db.getAll()))
+  }),
+
+  http.get('/api/units/:id/history', async ({ params }) => {
+    await delay(API_DELAY_MS)
+
+    const { id } = params
+    const unit = typeof id === 'string' ? db.getById(id) : undefined
+
+    if (!unit) {
+      return HttpResponse.json({ message: 'Единица техники не найдена' }, { status: 404 })
+    }
+
+    return HttpResponse.json(createHistory(unit))
+  }),
+
   http.get('/api/units/check-plate', async ({ request }) => {
     await delay(API_DELAY_MS)
 

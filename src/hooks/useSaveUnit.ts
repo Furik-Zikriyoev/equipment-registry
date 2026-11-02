@@ -11,6 +11,8 @@ export function useSaveUnit(id: string | undefined) {
     onSuccess: (unit) => {
       queryClient.setQueryData(['unit', unit.id], unit)
       void queryClient.invalidateQueries({ queryKey: ['units'] })
+      void queryClient.invalidateQueries({ queryKey: ['stats'] })
+      void queryClient.invalidateQueries({ queryKey: ['unit-history', unit.id] })
     },
   })
 }

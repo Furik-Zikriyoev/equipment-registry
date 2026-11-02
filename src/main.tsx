@@ -14,12 +14,17 @@ if (!rootElement) {
 }
 
 async function startMockServer(): Promise<void> {
-  const { worker } = await import('./mocks/browser')
+  const { worker, installFetchFallback } = await import('./mocks/browser')
 
-  await worker.start({
-    onUnhandledRequest: 'bypass',
-    serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
-  })
+  try {
+    await worker.start({
+      onUnhandledRequest: 'bypass',
+      quiet: true,
+      serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
+    })
+  } catch {
+    installFetchFallback()
+  }
 }
 
 void startMockServer().then(() => {

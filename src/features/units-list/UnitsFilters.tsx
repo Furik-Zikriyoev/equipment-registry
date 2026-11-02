@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button, Group, Select, TextInput } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
+import { IconSearch } from '@tabler/icons-react'
 
 import type { UnitStatus, UnitType } from '../../types/unit'
 import { UNIT_STATUSES, UNIT_STATUS_LABELS, UNIT_TYPES, UNIT_TYPE_LABELS } from '../../types/unit'
@@ -60,7 +61,8 @@ export function UnitsFilters({
         placeholder="Гос. номер или модель"
         value={inputValue}
         onChange={(event) => setInputValue(event.currentTarget.value)}
-        w={280}
+        leftSection={<IconSearch size={16} stroke={1.8} />}
+        w={{ base: '100%', md: 300 }}
       />
 
       <Select
@@ -70,7 +72,7 @@ export function UnitsFilters({
         value={type}
         onChange={(value) => onTypeChange(parseEnumValue(value, UNIT_TYPES))}
         clearable
-        w={190}
+        w={{ base: 'calc(50% - var(--mantine-spacing-md) / 2)', md: 190 }}
       />
 
       <Select
@@ -80,10 +82,10 @@ export function UnitsFilters({
         value={status}
         onChange={(value) => onStatusChange(parseEnumValue(value, UNIT_STATUSES))}
         clearable
-        w={190}
+        w={{ base: 'calc(50% - var(--mantine-spacing-md) / 2)', md: 190 }}
       />
 
-      <Button variant="subtle" onClick={onReset} disabled={!hasActiveFilters}>
+      <Button variant="subtle" color="gray" onClick={onReset} disabled={!hasActiveFilters}>
         Сбросить
       </Button>
     </Group>

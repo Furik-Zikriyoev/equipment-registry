@@ -1,4 +1,5 @@
-import { Box, Group, Pagination, Text } from '@mantine/core'
+import { Group, Pagination, Text } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 
 import { PAGE_SIZE } from '../../shared/config'
 import classes from './UnitsPagination.module.css'
@@ -10,6 +11,8 @@ interface UnitsPaginationProps {
 }
 
 export function UnitsPagination({ page, total, onPageChange }: UnitsPaginationProps) {
+  const isMobile = useMediaQuery('(max-width: 36em)')
+
   if (total === 0) {
     return null
   }
@@ -19,24 +22,22 @@ export function UnitsPagination({ page, total, onPageChange }: UnitsPaginationPr
   const to = Math.min(page * PAGE_SIZE, total)
 
   return (
-    <Group justify="space-between" align="center" wrap="nowrap" mt="lg">
-      <Box w={200} />
+    <Group justify="space-between" align="center" mt="lg" gap="sm">
+      <Text size="sm" c="dimmed" style={{ fontVariantNumeric: 'tabular-nums' }}>
+        Показано {from}–{to} из {total}
+      </Text>
 
-      {totalPages > 1 ? (
+      {totalPages > 1 && (
         <Pagination
           value={page}
           total={totalPages}
           onChange={onPageChange}
+          size={isMobile ? 'sm' : 'md'}
+          siblings={isMobile ? 0 : 1}
           radius="md"
           classNames={{ control: classes.control }}
         />
-      ) : (
-        <Box />
       )}
-
-      <Text w={200} ta="right" size="sm" c="dimmed">
-        Показано {from}–{to} из {total}
-      </Text>
     </Group>
   )
 }

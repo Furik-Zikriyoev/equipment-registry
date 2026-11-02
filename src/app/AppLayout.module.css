@@ -1,0 +1,11 @@
+.main {
+  background-color: var(--mantine-color-gray-0);
+}
+
+[data-mantine-color-scheme='dark'] .main {
+  background-color: var(--mantine-color-dark-8);
+}
+
+.navbar {
+  background-color: var(--mantine-color-body);
+}

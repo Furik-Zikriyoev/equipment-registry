@@ -1,5 +1,5 @@
 import type { Unit, UnitStatus, UnitType } from '../types/unit'
-import { UNIT_STATUSES, UNIT_TYPES } from '../types/unit'
+import { UNIT_TYPES } from '../types/unit'
 import { toLocalIsoDate } from '../shared/lib/date'
 
 const MODELS_BY_TYPE: Record<UnitType, readonly string[]> = {
@@ -27,7 +27,7 @@ const LETTERS = 'ABCDEFHKLMNOPRSTUVXYZ'
 
 const SEED_COUNT = 87
 
-function createRandom(seed: number): () => number {
+export function createRandom(seed: number): () => number {
   let state = seed
 
   return () => {
@@ -37,7 +37,7 @@ function createRandom(seed: number): () => number {
   }
 }
 
-function pick<T>(items: readonly T[], random: () => number): T {
+export function pick<T>(items: readonly T[], random: () => number): T {
   const item = items[Math.floor(random() * items.length)]
 
   if (item === undefined) {
@@ -56,11 +56,21 @@ function createPlateNumber(index: number, random: () => number): string {
 }
 
 function createServiceDate(random: () => number): string {
-  const daysAgo = 1 + Math.floor(random() * 720)
+  const daysAgo = 1 + Math.floor(random() * 420)
   const date = new Date()
   date.setDate(date.getDate() - daysAgo)
 
   return toLocalIsoDate(date)
+}
+
+/** Как в живом парке: большая часть техники в работе */
+function pickStatus(random: () => number): UnitStatus {
+  const value = random()
+
+  if (value < 0.66) return 'working'
+  if (value < 0.8) return 'repair'
+
+  return 'idle'
 }
 
 export function createSeedUnits(): Unit[] {
@@ -68,7 +78,7 @@ export function createSeedUnits(): Unit[] {
 
   return Array.from({ length: SEED_COUNT }, (_, index): Unit => {
     const type: UnitType = pick(UNIT_TYPES, random)
-    const status: UnitStatus = pick(UNIT_STATUSES, random)
+    const status: UnitStatus = pickStatus(random)
 
     return {
       id: String(index + 1),

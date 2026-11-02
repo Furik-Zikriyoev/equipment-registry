@@ -1,6 +1,8 @@
-import type { ReactNode } from "react";
-import { MantineProvider } from "@mantine/core";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from 'react'
+import { MantineProvider } from '@mantine/core'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+import { theme } from './theme'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -10,16 +12,16 @@ const queryClient = new QueryClient({
       staleTime: 30_000,
     },
   },
-});
+})
 
 interface AppProvidersProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <MantineProvider defaultColorScheme="light">
+    <MantineProvider theme={theme} defaultColorScheme="light">
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </MantineProvider>
-  );
+  )
 }

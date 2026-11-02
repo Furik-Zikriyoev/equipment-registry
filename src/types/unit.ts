@@ -46,3 +46,30 @@ export interface UnitsPage {
   items: Unit[]
   total: number
 }
+
+export const SERVICE_KINDS = ['service', 'repair'] as const
+export type ServiceKind = (typeof SERVICE_KINDS)[number]
+
+export const SERVICE_KIND_LABELS: Record<ServiceKind, string> = {
+  service: 'Плановое ТО',
+  repair: 'Ремонт',
+}
+
+export interface ServiceRecord {
+  id: string
+  date: string
+  kind: ServiceKind
+  title: string
+  mileage: number
+  cost: number
+}
+
+export interface FleetStats {
+  total: number
+  totalMileage: number
+  byStatus: Record<UnitStatus, number>
+  byType: Record<UnitType, Record<UnitStatus, number>>
+  serviceOverdue: number
+  serviceSoon: number
+  attention: Unit[]
+}

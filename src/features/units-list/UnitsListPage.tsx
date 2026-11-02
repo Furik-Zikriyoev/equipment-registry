@@ -1,12 +1,16 @@
 import type { ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Box, Button, Group, LoadingOverlay, Paper, Text, Title } from '@mantine/core'
+import { Box, Button, LoadingOverlay, Paper } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import { IconPlus } from '@tabler/icons-react'
 
 import { useUnits } from '../../hooks/useUnits'
 import { useUnitsSearchParams } from '../../hooks/useUnitsSearchParams'
 import { EmptyState } from '../../shared/ui/EmptyState'
 import { ErrorState } from '../../shared/ui/ErrorState'
+import { PageHeader } from '../../shared/ui/PageHeader'
+import { pluralize } from '../../shared/lib/format'
+import { UnitsCards } from './UnitsCards'
 import { UnitsFilters } from './UnitsFilters'
 import { UnitsPagination } from './UnitsPagination'
 import { UnitsTable } from './UnitsTable'
@@ -14,6 +18,7 @@ import { UnitsTableSkeleton } from './UnitsTableSkeleton'
 
 export function UnitsListPage() {
   const navigate = useNavigate()
+  const isMobile = useMediaQuery('(max-width: 62em)')
 
   const { query, hasActiveFilters, setSearch, setType, setStatus, toggleSort, setPage, reset } =
     useUnitsSearchParams()
@@ -73,12 +78,16 @@ export function UnitsListPage() {
       <Box pos="relative">
         <LoadingOverlay visible={isFetching} zIndex={1} overlayProps={{ blur: 1 }} />
 
-        <UnitsTable
-          units={data.items}
-          sort={query.sort}
-          order={query.order}
-          onSortChange={toggleSort}
-        />
+        {isMobile ? (
+          <UnitsCards units={data.items} />
+        ) : (
+          <UnitsTable
+            units={data.items}
+            sort={query.sort}
+            order={query.order}
+            onSortChange={toggleSort}
+          />
+        )}
 
         <UnitsPagination page={query.page} total={data.total} onPageChange={setPage} />
       </Box>
@@ -87,27 +96,26 @@ export function UnitsListPage() {
 
   return (
     <>
-      <Group justify="space-between" mb="lg">
-        <Group gap="sm" align="baseline">
-          <Title order={2}>Список техники</Title>
-          {data && (
-            <Text c="dimmed" size="xl" fw={500}>
-              {data.total}
-            </Text>
-          )}
-        </Group>
+      <PageHeader
+        title="Техника"
+        description={
+          data
+            ? `${data.total} ${pluralize(data.total, ['единица', 'единицы', 'единиц'])}${hasActiveFilters ? ' по выбранным условиям' : ' в парке'}`
+            : 'Все машины парка: статусы, пробег и обслуживание'
+        }
+        actions={
+          <Button
+            component={Link}
+            to="/units/new"
+            size="md"
+            leftSection={<IconPlus size={18} stroke={2.2} />}
+          >
+            Добавить технику
+          </Button>
+        }
+      />
 
-        <Button
-          component={Link}
-          to="/units/new"
-          color="green"
-          leftSection={<IconPlus size={18} stroke={2.2} />}
-        >
-          Добавить технику
-        </Button>
-      </Group>
-
-      <Paper withBorder radius="md" p="md" mb="md">
+      <Paper withBorder radius="lg" p="md" mb="md">
         <UnitsFilters
           search={query.search}
           type={query.type}
@@ -120,7 +128,7 @@ export function UnitsListPage() {
         />
       </Paper>
 
-      <Paper withBorder radius="md" p="md">
+      <Paper withBorder={!isMobile} bg={isMobile ? 'transparent' : undefined} radius="lg" p={isMobile ? 0 : 'md'}>
         {renderContent()}
       </Paper>
     </>

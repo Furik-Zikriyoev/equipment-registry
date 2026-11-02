@@ -1,5 +1,8 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { Button, Group, Skeleton, Stack, Title } from '@mantine/core'
+import { Button, Skeleton, Stack } from '@mantine/core'
+import { IconArrowLeft } from '@tabler/icons-react'
+
+import { PageHeader } from '../../shared/ui/PageHeader'
 
 import { useUnit } from '../../hooks/useUnit'
 import { ErrorState } from '../../shared/ui/ErrorState'
@@ -79,12 +82,23 @@ export function UnitFormPage() {
 
   return (
     <>
-      <Group justify="space-between" mb="md">
-        <Title order={2}>{isEditMode ? 'Редактирование техники' : 'Новая единица техники'}</Title>
-        <Button variant="subtle" onClick={() => navigate('/units')}>
-          К списку
-        </Button>
-      </Group>
+      <PageHeader
+        title={isEditMode ? 'Редактирование' : 'Новая техника'}
+        description={
+          isEditMode && data
+            ? `${data.plateNumber} · ${data.model}`
+            : 'Заполните данные машины. Гос. номер проверяется на уникальность'
+        }
+        actions={
+          <Button
+            variant="default"
+            leftSection={<IconArrowLeft size={16} />}
+            onClick={() => navigate(isEditMode && id ? `/units/${id}` : '/units')}
+          >
+            {isEditMode ? 'К карточке' : 'К списку'}
+          </Button>
+        }
+      />
 
       {renderForm()}
     </>

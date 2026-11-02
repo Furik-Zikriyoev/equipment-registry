@@ -1,4 +1,4 @@
-import type { Unit, UnitDraft, UnitsPage, UnitsQuery } from '../types/unit'
+import type { FleetStats, ServiceRecord, Unit, UnitDraft, UnitsPage, UnitsQuery } from '../types/unit'
 import { apiRequest } from './client'
 
 function buildUnitsSearchParams(query: UnitsQuery): string {
@@ -57,4 +57,12 @@ export function checkPlateNumber(
   }
 
   return apiRequest<{ available: boolean }>(`/units/check-plate?${params.toString()}`, { signal })
+}
+
+export function getStats(signal?: AbortSignal): Promise<FleetStats> {
+  return apiRequest<FleetStats>('/stats', { signal })
+}
+
+export function getUnitHistory(id: string, signal?: AbortSignal): Promise<ServiceRecord[]> {
+  return apiRequest<ServiceRecord[]>(`/units/${id}/history`, { signal })
 }
